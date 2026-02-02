@@ -1,49 +1,31 @@
-<h1>Infraestrutura de Segurança e Gestão de Segredos na AWS</h1>
+<h2>Guia de Implementação: AWS KMS e Secrets Manager</h2>
 
-<h2>Objetivo</h2>
-<p> O projeto tem como objetivo estabelecer uma arquitetura segura para o armazenamento de dados sensíveis. </p>
+<p>Abaixo, detalho o procedimento técnico realizado para a configuração da camada de segurança de dados sensíveis:</p>
 
-<h2>Arquitetura de Segurança</h2>
-<p>
-  A solução baseia-se na separação de responsabilidades, utilizando dois serviços principais que trabalham de forma integrada:
-</p>
-
-<table width="100%">
-  <thead>
-    <tr>
-      <th align="left">Serviço</th>
-      <th align="left">Papel na Arquitetura</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><b>AWS KMS</b></td>
-      <td>Responsável pela geração e controle da chave mestra (CMK). É o motor de criptografia.</td>
-    </tr>
-    <tr>
-      <td><b>AWS Secrets Manager</b></td>
-      <td>Funciona como o cofre lógico que armazena pares de chave/valor (usuários e senhas).</td>
-    </tr>
-  </tbody>
-</table>
-
-<h2>Passo a Passo da Implementação</h2>
-
-<h3>Provisionamento da Chave Mestra (KMS)</h3>
-<p>
-  Iniciei criando uma chave simétrica personalizada com o alias <code>chave-estudo-alura-bq</code>. A escolha por uma chave gerenciada pelo cliente (Customer Managed Key) permite um controle granular sobre quem pode rotacionar ou deletar a chave, além de fornecer logs de auditoria detalhados.
-</p>
-
-<h3>Configuração do Cofre (Secrets Manager)</h3>
-<p>
-  Com a chave KMS ativa, configurei o segredo para um banco de dados fictício. No processo:
-</p>
+<h3>1. Criação da Chave de Criptografia (AWS KMS)</h3>
+<p>O KMS fornece a infraestrutura para gerar e gerenciar as chaves que protegem os dados.</p>
 <ul>
-  <li>Defini pares de chave/valor para <code>USUARIO</code> e <code>SENHA</code>.</li>
-  <li><b>Ponto Crítico:</b> Vinculei explicitamente o segredo à chave <code>chave-estudo-alura-bq</code>, garantindo que o segredo só possa ser lido por quem possuir permissão na chave específica.</li>
+    <li>No console AWS, acesse <b>Key Management Service (KMS)</b>.</li>
+    <li>Selecione <b>Chaves geradas pelo cliente</b> e clique em <b>Criar chave</b>.</li>
+    <li><b>Tipo de chave:</b> Escolha <b>Simétrica</b>.</li>
+    <li><b>Uso da chave:</b> Marque <b>Criptografar e descriptografar</b>.</li>
+    <li><b>Alias:</b> Defina o nome de identificação (ex: <code>chave-estudo-alura-bq</code>).</li>
+    <li>Nas telas de permissões, selecione o seu usuário como administrador e como usuário da chave para garantir controle total.</li>
 </ul>
 
-<h2>Visão Multi-Cloud (AWS vs Azure)</h2>
-<p>
-  Para fins de portfólio e clareza técnica entre plataformas, esta implementação segue o mesmo raciocínio do <b>Azure Key Vault</b>, onde o KMS equivale às <i>Keys</i> e o Secrets Manager equivale aos <i>Secrets</i>.
-</p>
+
+
+<h3>2. Armazenamento de Credenciais (AWS Secrets Manager)</h3>
+<p>O Secrets Manager utiliza a chave KMS para selar informações como senhas e usuários.</p>
+<ul>
+    <li>No console, acesse <b>Secrets Manager</b> e clique em <b>Armazenar um novo segredo</b>.</li>
+    <li>Escolha o tipo <b>Outro tipo de segredo</b> para chaves personalizadas.</li>
+    <li>Em <b>Pares de chave/valor</b>, insira os dados (ex: Chave: <code>USUARIO</code> / Valor: <code>seu_usuario</code>).</li>
+    <li><b>Criptografia:</b> Selecione na lista a chave KMS criada no passo anterior (<code>chave-estudo-alura-bq</code>).</li>
+    <li>Defina um nome para o segredo (ex: <code>projeto/banco/credenciais</code>).</li>
+    <li>Na tela de rotação, mantenha <b>Desativado</b> para evitar custos adicionais em ambiente de estudo.</li>
+</ul>
+
+
+
+<hr>
